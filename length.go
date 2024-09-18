@@ -17,24 +17,24 @@ func marshalLength(n uint16) []byte {
 }
 
 func readLength(r io.Reader) (value uint16, err error) {
-	var length [3]byte
-	if _, err = r.Read(length[0:1]); err != nil {
-		return 0, fmt.Errorf("failed to read length: %w", err)
-	}
-	if length[0] < 128 {
-		return uint16(length[0]), nil
-	}
-	switch length[0] {
+	var n int
+	length := make([]byte, 1)
+	switch n, err = io.ReadAtLeast(r, length, 1); length[0] {
 	case 0x81:
-		if _, err = r.Read(length[1:2]); err == nil {
-			value = uint16(length[1])
-		}
+		n, err = io.ReadAtLeast(r, length, 1)
+		value = uint16(length[0])
 	case 0x82:
-		if _, err = r.Read(length[1:3]); err == nil {
-			value = uint16(length[1])<<8 | uint16(length[2])
-		}
+		length = make([]byte, 2)
+		n, err = io.ReadAtLeast(r, length, 2)
+		value = uint16(length[1]) | uint16(length[0])<<8
 	default:
-		err = errors.New("if length is greater than 127, first byte must indicate encoding of length")
+		if length[0] >= 0x80 {
+			err = errors.New("if length is greater than 127, first byte must indicate encoding of length")
+		}
+		value = uint16(length[0])
+	}
+	if len(length) != n {
+		err = fmt.Errorf("expected %d bytes, got %d", len(length), n)
 	}
 	if err != nil {
 		err = fmt.Errorf("failed to read length: %w", err)

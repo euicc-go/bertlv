@@ -15,7 +15,7 @@ func (tlv *TLV) ReadFrom(r io.Reader) (n int64, err error) {
 		return
 	}
 	if length, err = readLength(r); err != nil {
-		return n, fmt.Errorf("tag %02X: invalid length encoding\n%w", t.Tag, err)
+		return n, fmt.Errorf("tag %02X: invalid length encoding, offset: %d\n%w", t.Tag, r.(*countReader).Offset(), err)
 	}
 	if t.Tag.Constructed() {
 		var _n int64
@@ -28,7 +28,7 @@ func (tlv *TLV) ReadFrom(r io.Reader) (n int64, err error) {
 		}
 	} else if length > 0 {
 		t.Value = make([]byte, length)
-		if _, err = r.Read(t.Value); err != nil {
+		if _, err = io.ReadAtLeast(r, t.Value, len(t.Value)); err != nil {
 			return n, fmt.Errorf("tag %02X: invalid length encoding\n%w", t.Tag, err)
 		}
 	}

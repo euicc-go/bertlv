@@ -15,16 +15,17 @@ func (tlv *TLV) ReadFrom(r io.Reader) (n int64, err error) {
 		return
 	}
 	if length, err = readLength(r); err != nil {
-		return n, fmt.Errorf("tag %02X: invalid length encoding, offset: %d\n%w", t.Tag, r.(*countReader).Offset(), err)
+		return n, fmt.Errorf("tag %02X: invalid length encoding\n%w", t.Tag, err)
 	}
 	if t.Tag.Constructed() {
 		var _n int64
-		var child TLV
+		var child *TLV
 		for index := uint16(0); index < length; index += uint16(_n) {
+			child = new(TLV)
 			if _n, err = child.ReadFrom(r); err != nil {
 				return n, fmt.Errorf("tag %02X: invalid child object\n%w", t.Tag, err)
 			}
-			t.Children = append(t.Children, &child)
+			t.Children = append(t.Children, child)
 		}
 	} else if length > 0 {
 		t.Value = make([]byte, length)

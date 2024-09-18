@@ -7,6 +7,29 @@ import (
 	"io"
 )
 
+func (tlv *TLV) Len() (length int) {
+	length += len(tlv.Tag)
+	switch {
+	case len(tlv.Value) < 128:
+		length += 1
+	case len(tlv.Value) < 256:
+		length += 2
+	default:
+		length += 3
+	}
+	if tlv.Tag.Constructed() {
+		for _, child := range tlv.Children {
+			if child == nil {
+				continue
+			}
+			length += child.Len()
+		}
+	} else {
+		length += len(tlv.Value)
+	}
+	return
+}
+
 func (tlv *TLV) WriteTo(w io.Writer) (n int64, err error) {
 	switch {
 	case len(tlv.Value) > 0 && tlv.Tag.Constructed():
@@ -48,6 +71,7 @@ func (tlv *TLV) MarshalText() ([]byte, error) {
 
 func (tlv *TLV) MarshalBinary() ([]byte, error) {
 	var buf bytes.Buffer
+	buf.Grow(tlv.Len())
 	_, err := tlv.WriteTo(&buf)
 	return buf.Bytes(), err
 }

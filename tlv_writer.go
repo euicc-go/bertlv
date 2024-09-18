@@ -14,7 +14,7 @@ func (tlv *TLV) WriteTo(w io.Writer) (n int64, err error) {
 	case len(tlv.Children) > 0 && tlv.Tag.Primitive():
 		return 0, errors.New("tlv: primitive tag cannot have children")
 	}
-	var value []byte
+	value := tlv.Value
 	if tlv.Tag.Constructed() {
 		var buf bytes.Buffer
 		for _, child := range tlv.Children {
@@ -26,8 +26,6 @@ func (tlv *TLV) WriteTo(w io.Writer) (n int64, err error) {
 			}
 		}
 		value = buf.Bytes()
-	} else {
-		value = tlv.Value
 	}
 	if len(value) > 0xffff {
 		err = errors.New("tlv: invalid value or children")
@@ -42,7 +40,9 @@ func (tlv *TLV) WriteTo(w io.Writer) (n int64, err error) {
 
 func (tlv *TLV) MarshalText() ([]byte, error) {
 	var buf bytes.Buffer
-	_, err := tlv.WriteTo(base64.NewEncoder(base64.StdEncoding, &buf))
+	encoder := base64.NewEncoder(base64.StdEncoding, &buf)
+	_, err := tlv.WriteTo(encoder)
+	_ = encoder.Close()
 	return buf.Bytes(), err
 }
 

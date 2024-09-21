@@ -6,6 +6,17 @@ import (
 	"testing"
 )
 
+func TestTLV_Len(t *testing.T) {
+	var tlv TLV
+	tlv.Tag = Primitive.ContextSpecific(0)
+	tlv.Value = make([]byte, 127)
+	assert.Equal(t, 129, tlv.Len())
+	tlv.Value = make([]byte, 255)
+	assert.Equal(t, 258, tlv.Len())
+	tlv.Value = make([]byte, 256)
+	assert.Equal(t, 260, tlv.Len())
+}
+
 func TestTLV_MarshalText(t *testing.T) {
 	tlv := NewValue(Primitive.ContextSpecific(0), []byte{0xff})
 	text, err := tlv.MarshalText()

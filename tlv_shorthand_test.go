@@ -34,8 +34,10 @@ func TestNewChildrenIter(t *testing.T) {
 }
 
 func TestMarshalValue(t *testing.T) {
-	value := primitive.Int8(-1)
-	tlv, err := MarshalValue(Primitive.ContextSpecific(0), &value)
+	tlv, err := MarshalValue(
+		Primitive.ContextSpecific(0),
+		primitive.MarshalInt[int8](-1),
+	)
 	assert.NoError(t, err)
 	assert.Equal(t, Tag{0x80}, tlv.Tag)
 	assert.Len(t, tlv.Value, 1)
@@ -45,19 +47,18 @@ func TestMarshalValue(t *testing.T) {
 
 func TestTLV_MarshalValue(t *testing.T) {
 	tlv := NewValue(Primitive.ContextSpecific(0), nil)
-	value := primitive.Int8(-1)
-	assert.NoError(t, tlv.MarshalValue(&value))
+	assert.NoError(t, tlv.MarshalValue(primitive.MarshalInt[int8](-1)))
 	assert.Equal(t, []byte{0x80, 0x01, 0xff}, tlv.Bytes())
-	value = 0
-	assert.NoError(t, tlv.UnmarshalValue(&value))
-	assert.Equal(t, primitive.Int8(-1), value)
+	var value int8
+	assert.NoError(t, tlv.UnmarshalValue(primitive.UnmarshalInt[int8](&value)))
+	assert.Equal(t, int8(-1), value)
 }
 
 func TestTLV_MarshalValueError(t *testing.T) {
 	tlv := NewChildren(Constructed.ContextSpecific(0))
-	value := primitive.Int8(-1)
-	assert.Error(t, tlv.MarshalValue(&value))
-	assert.Error(t, tlv.UnmarshalValue(&value))
+	var value int8
+	assert.Error(t, tlv.MarshalValue(primitive.MarshalInt[int8](value)))
+	assert.Error(t, tlv.UnmarshalValue(primitive.UnmarshalInt[int8](&value)))
 }
 
 func TestTLV_String(t *testing.T) {

@@ -2,13 +2,15 @@ package primitive
 
 import "math/big"
 
-type BigInt struct{ *big.Int }
-
-func (v *BigInt) UnmarshalBinary(data []byte) error {
-	v.Int = new(big.Int).SetBytes(data)
-	return nil
+func UnmarshalBigInt(value *big.Int) Unmarshaler {
+	return func(data []byte) error {
+		value.SetBytes(data)
+		return nil
+	}
 }
 
-func (v *BigInt) MarshalBinary() ([]byte, error) {
-	return v.Int.Bytes(), nil
+func MarshalBigInt(value *big.Int) Marshaller {
+	return func() ([]byte, error) {
+		return value.Bytes(), nil
+	}
 }

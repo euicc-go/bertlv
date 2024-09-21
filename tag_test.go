@@ -67,6 +67,21 @@ func TestTag_Form(t *testing.T) {
 	}
 }
 
+func TestTag_If(t *testing.T) {
+	var tag Tag
+	tag = Tag{0b00_0_0_0000}
+	assert.True(t, tag.If(Universal, Primitive, 0))
+	tag = Tag{0b01_1_0_0000}
+	assert.True(t, tag.If(Application, Constructed, 0))
+}
+
+func TestTag_Equal(t *testing.T) {
+	var tag Tag
+	tag = Tag{0b01_1_0_0000}
+	assert.True(t, tag.Equal(Tag{0b01_1_0_0000}))
+	assert.False(t, tag.Equal(Tag{0b00_0_0_0001}))
+}
+
 func TestTag_UnmarshalBinary_Error(t *testing.T) {
 	type Fixture struct {
 		Tag   Tag

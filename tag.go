@@ -1,6 +1,7 @@
 package bertlv
 
 import (
+	"crypto/subtle"
 	"fmt"
 	"io"
 	"math/bits"
@@ -69,6 +70,14 @@ func (t *Tag) Value() (value uint64) {
 		}
 	}
 	return
+}
+
+func (t *Tag) If(class Class, form Form, value uint64) bool {
+	return t.Class() == class && t.Form() == form && t.Value() == value
+}
+
+func (t *Tag) Equal(tag Tag) bool {
+	return subtle.ConstantTimeCompare(*t, tag) == 1
 }
 
 func (t *Tag) Form() Form        { return Form((*t)[0] >> 5 & 0b1) }

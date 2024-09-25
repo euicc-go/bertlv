@@ -41,3 +41,17 @@ func readLength(r io.Reader) (value uint16, err error) {
 	}
 	return
 }
+
+func contentLength(tlv *TLV) int {
+	if tlv.Tag.Primitive() {
+		return len(tlv.Value)
+	}
+	var n int
+	for _, child := range tlv.Children {
+		if child == nil {
+			continue
+		}
+		n += child.Len()
+	}
+	return n
+}

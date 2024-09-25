@@ -26,7 +26,7 @@ func NewTag(class Class, form Form, value uint64) Tag {
 
 func (t *Tag) ReadFrom(r io.Reader) (n int64, err error) {
 	var tag [11]byte
-	if _, err = r.Read(tag[0:1]); err != nil {
+	if _, err = io.ReadAtLeast(r, tag[0:1], 1); err != nil {
 		return n, fmt.Errorf("tag encoding with less than one byte\n%w", err)
 	}
 	if tag[0]&0x1f != 0x1f {
@@ -34,7 +34,7 @@ func (t *Tag) ReadFrom(r io.Reader) (n int64, err error) {
 		return
 	}
 	for n = 1; ; n++ {
-		if _, err = r.Read(tag[n : n+1]); err != nil {
+		if _, err = io.ReadAtLeast(r, tag[n:n+1], 1); err != nil {
 			return n, fmt.Errorf("tag encoding with more than %d bytes\n%w", n+1, err)
 		}
 		if tag[n]>>7 == 0b0 {
@@ -56,20 +56,20 @@ func (t *Tag) String() string {
 	return fmt.Sprintf("[%d]", t.Value())
 }
 
-func (t *Tag) Value() (value uint64) {
+func (t *Tag) Value() uint64 {
 	tag := *t
-	if value = uint64(tag[0] & 0x1f); value != 0x1f {
-		return
+	if value := uint64(tag[0] & 0x1f); value != 0x1f {
+		return value
 	}
-	index := 1
-	for value = 0; ; index++ {
+	value := uint64(0)
+	for index := 1; index < len(tag); index++ {
 		value <<= 7
-		value += uint64(tag[index] & 0x7f)
+		value |= uint64(tag[index] & 0x7f)
 		if tag[index]>>7 == 0 {
 			break
 		}
 	}
-	return
+	return value
 }
 
 func (t *Tag) If(class Class, form Form, value uint64) bool {

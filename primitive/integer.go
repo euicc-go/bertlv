@@ -1,6 +1,7 @@
 package primitive
 
 import (
+	"encoding"
 	"fmt"
 	"unsafe"
 )
@@ -9,9 +10,9 @@ type signedInt interface {
 	~int | ~int8 | ~int16 | ~int32 | ~int64
 }
 
-func UnmarshalInt[Int signedInt](value *Int) Unmarshaler {
+func UnmarshalInt[Int signedInt](value *Int) encoding.BinaryUnmarshaler {
 	size := int(unsafe.Sizeof(*value))
-	return func(data []byte) error {
+	return Unmarshaler(func(data []byte) error {
 		if len(data) == 0 {
 			return nil
 		} else if len(data) > size {
@@ -36,12 +37,12 @@ func UnmarshalInt[Int signedInt](value *Int) Unmarshaler {
 		}
 		*value = n
 		return nil
-	}
+	})
 }
 
-func MarshalInt[Int signedInt](value Int) Marshaller {
+func MarshalInt[Int signedInt](value Int) encoding.BinaryMarshaler {
 	size := int(unsafe.Sizeof(value))
-	return func() (data []byte, err error) {
+	return Marshaler(func() (data []byte, err error) {
 		data = make([]byte, size)
 		var index int
 		for index = len(data) - 1; index >= 0; index-- {
@@ -55,5 +56,5 @@ func MarshalInt[Int signedInt](value Int) Marshaller {
 		}
 		data = data[index:]
 		return
-	}
+	})
 }

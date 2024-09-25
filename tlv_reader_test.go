@@ -42,3 +42,14 @@ func TestTLV_UnmarshalJSONWithNewline(t *testing.T) {
 	assert.NoError(t, json.Unmarshal([]byte(`"gA\nH/"`), &tlv))
 	assert.Equal(t, []byte{0xff}, tlv.Value)
 }
+
+func TestTLV_UnmarshalBERTLV(t *testing.T) {
+	original := NewChildren(
+		Constructed.Application(0),
+		NewValue(Primitive.Application(1), []byte{0x01}),
+	)
+	var cloned TLV
+	assert.NoError(t, cloned.UnmarshalBERTLV(original))
+	assert.Equal(t, original, &cloned)
+	assert.Equal(t, original.Bytes(), cloned.Bytes())
+}

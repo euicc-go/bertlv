@@ -1,6 +1,7 @@
 package primitive
 
 import (
+	"encoding"
 	"errors"
 )
 
@@ -16,8 +17,8 @@ func (bits BitString) String() string {
 	return string(values)
 }
 
-func UnmarshalBitString(bits *[]bool) Unmarshaler {
-	return func(data []byte) error {
+func UnmarshalBitString(bits *[]bool) encoding.BinaryUnmarshaler {
+	return Unmarshaler(func(data []byte) error {
 		paddingBits := int(data[0])
 		if paddingBits > 7 ||
 			len(data) == 1 && paddingBits > 0 ||
@@ -35,11 +36,11 @@ func UnmarshalBitString(bits *[]bool) Unmarshaler {
 		}
 		*bits = flags
 		return nil
-	}
+	})
 }
 
-func MarshalBitString(bits []bool) Marshaller {
-	return func() ([]byte, error) {
+func MarshalBitString(bits []bool) encoding.BinaryMarshaler {
+	return Marshaler(func() ([]byte, error) {
 		data := make([]byte, len(bits)/8+2)
 		paddingBits := 8 - len(bits)%8
 		data[0] = byte(paddingBits)
@@ -53,5 +54,5 @@ func MarshalBitString(bits []bool) Marshaller {
 			}
 		}
 		return data, nil
-	}
+	})
 }

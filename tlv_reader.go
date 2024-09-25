@@ -46,3 +46,8 @@ func (tlv *TLV) UnmarshalBinary(data []byte) error {
 	_, err := tlv.ReadFrom(bytes.NewReader(data))
 	return err
 }
+
+func (tlv *TLV) UnmarshalBERTLV(cloned *TLV) error {
+	*tlv = *cloned.Clone()
+	return nil
+}

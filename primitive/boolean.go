@@ -7,7 +7,7 @@ func UnmarshalBool(value *bool) Unmarshaler {
 	}
 }
 
-func MarshalBool(value bool) Marshaller {
+func MarshalBool(value bool) Marshaler {
 	return func() ([]byte, error) {
 		if value {
 			return []byte{0xff}, nil

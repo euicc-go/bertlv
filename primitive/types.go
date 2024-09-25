@@ -6,8 +6,8 @@ func (u Unmarshaler) UnmarshalBinary(data []byte) error {
 	return u(data)
 }
 
-type Marshaller func() ([]byte, error)
+type Marshaler func() ([]byte, error)
 
-func (m Marshaller) MarshalBinary() ([]byte, error) {
+func (m Marshaler) MarshalBinary() ([]byte, error) {
 	return m()
 }

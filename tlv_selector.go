@@ -1,7 +1,5 @@
 package bertlv
 
-import "bytes"
-
 func (tlv *TLV) At(index int) *TLV {
 	switch {
 	case index >= 0 && index < len(tlv.Children):
@@ -14,7 +12,7 @@ func (tlv *TLV) At(index int) *TLV {
 
 func (tlv *TLV) First(tag Tag) *TLV {
 	for _, child := range tlv.Children {
-		if bytes.Equal(child.Tag, tag) {
+		if child != nil && child.Tag.Equal(tag) {
 			return child
 		}
 	}
@@ -23,7 +21,7 @@ func (tlv *TLV) First(tag Tag) *TLV {
 
 func (tlv *TLV) Find(tag Tag) (matches []*TLV) {
 	for _, child := range tlv.Children {
-		if bytes.Equal(child.Tag, tag) {
+		if child != nil && child.Tag.Equal(tag) {
 			matches = append(matches, child)
 		}
 	}

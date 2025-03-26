@@ -16,6 +16,15 @@ func marshalLength(n uint16) []byte {
 	return []byte{0x82, byte(n >> 8), byte(n)}
 }
 
+func ReadLength(r io.Reader) (tag Tag, n uint16, err error) {
+	tag = make(Tag, 0)
+	if _, err = tag.ReadFrom(r); err != nil {
+		return
+	}
+	n, err = readLength(r)
+	return
+}
+
 func readLength(r io.Reader) (value uint16, err error) {
 	var n int
 	length := make([]byte, 1)

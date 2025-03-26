@@ -6,6 +6,13 @@ import (
 	"testing"
 )
 
+func TestReadLength(t *testing.T) {
+	tag, length, err := ReadLength(bytes.NewReader([]byte{0xff, 0x40, 0x48}))
+	assert.NoError(t, err)
+	assert.Equal(t, Tag{0xff, 0x40}, tag)
+	assert.Equal(t, uint16(72), length)
+}
+
 func TestLength(t *testing.T) {
 	fixtures := map[uint16][]byte{
 		0x00:   {0x00},
